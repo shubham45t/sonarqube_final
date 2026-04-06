@@ -1,52 +1,60 @@
+package goalmanager;
+
 import java.sql.Connection;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.Scanner;
+import java.util.logging.Logger;
 
 public class GoalManager {
 
+    private static final Logger logger =
+    Logger.getLogger(GoalManager.class.getName());
+
     public static void main(String args[]){
 
-        Scanner sc=new Scanner(System.in);
+        try(Scanner sc=new Scanner(System.in)){
 
-        System.out.println("Enter Goal Title:");
+            logger.info("Enter Goal Title:");
 
-        String title=sc.nextLine();
+            String title=sc.nextLine();
 
-        System.out.println("Enter Description:");
+            logger.info("Enter Description:");
 
-        String desc=sc.nextLine();
+            String desc=sc.nextLine();
 
-        addGoal(title,desc);
+            addGoal(title,desc);
 
-        viewGoals();
+            viewGoals();
+
+        }
 
     }
 
     public static void addGoal(String title,String desc){
 
-        try{
+        String query=
+        "INSERT INTO goals(title,description) VALUES(?,?)";
 
+        try(
             Connection conn=DBConnection.connect();
+            PreparedStatement stmt=
+            conn.prepareStatement(query);
+        ){
 
-            Statement stmt=conn.createStatement();
+            stmt.setString(1,title);
+            stmt.setString(2,desc);
 
-            // SECURITY BUG 2
-            // SQL Injection vulnerability
+            stmt.executeUpdate();
 
-            String query=
-            "INSERT INTO goals(title,description) VALUES('"
-            +title+"','"+desc+"')";
-
-            stmt.executeUpdate(query);
-
-            conn.close();
+            logger.info("Goal added");
 
         }
 
         catch(Exception e){
 
-            e.printStackTrace();
+            logger.severe("Error adding goal: "+e.getMessage());
 
         }
 
@@ -54,31 +62,28 @@ public class GoalManager {
 
     public static void viewGoals(){
 
-        try{
+        String query="SELECT * FROM goals";
 
+        try(
             Connection conn=DBConnection.connect();
-
             Statement stmt=conn.createStatement();
-
-            ResultSet rs=
-            stmt.executeQuery("SELECT * FROM goals");
+            ResultSet rs=stmt.executeQuery(query);
+        ){
 
             while(rs.next()){
 
-                System.out.println(
+                logger.info(
                 rs.getInt("id")+" "
                 +rs.getString("title")+" "
                 +rs.getString("description"));
 
             }
 
-            conn.close();
-
         }
 
         catch(Exception e){
 
-            e.printStackTrace();
+            logger.severe("Error reading goals: "+e.getMessage());
 
         }
 
