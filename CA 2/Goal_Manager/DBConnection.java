@@ -1,12 +1,15 @@
+package goalmanager;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 
-public class DBConnection {
+public final class DBConnection {
 
-    // SECURITY BUG 1
-    // Hardcoded credentials
-    private static String username="admin";
-    private static String password="admin123";
+    private DBConnection(){
+
+        throw new IllegalStateException("Utility class");
+
+    }
 
     public static Connection connect(){
 
@@ -14,13 +17,12 @@ public class DBConnection {
 
         try{
 
-            conn=DriverManager.getConnection(
-                    "jdbc:sqlite:goals.db",
-                    username,
-                    password
-            );
+            String url="jdbc:sqlite:goals.db";
+
+            conn=DriverManager.getConnection(url);
 
         }
+
         catch(Exception e){
 
             e.printStackTrace();
